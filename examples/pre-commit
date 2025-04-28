@@ -1,0 +1,13 @@
+#!/bin/sh
+
+echo "Running shfmt..."
+find . -name "*.sh" -print0 | xargs -0 shfmt -w
+
+echo "Running shellcheck..."
+find . -name "*.sh" -print0 | xargs -0 shellcheck
+
+if [ $? -ne 0 ]; then
+  echo "ShellCheck failed. Commit aborted."
+  exit 1
+fi
+

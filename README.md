@@ -97,6 +97,37 @@ source ~/.zshrc
 
 After uninstallation, you may need to restart your shell or run `source ~/.zshrc` for changes to take effect.
 
+## 🔧 Git Hooks Setup
+
+### Pre-commit Hook Setup
+
+The repository includes a pre-commit hook that runs `shfmt` and `shellcheck` on all shell scripts. To set it up:
+
+1. **Install Required Tools**:
+
+   For Linux (Debian/Ubuntu):
+   ```bash
+   sudo apt-get update
+   sudo apt-get install shellcheck
+   sudo snap install shfmt
+   ```
+
+   For macOS (using Homebrew):
+   ```bash
+   brew install shellcheck
+   brew install shfmt
+   ```
+
+2. **Make the Hook Executable**:
+   ```bash
+   chmod +x .git/hooks/pre-commit
+   ```
+
+The pre-commit hook will automatically:
+- Format all shell scripts using `shfmt`
+- Check for potential issues using `shellcheck`
+- Prevent commits if any issues are found
+
 ## 🛠️ Project Structure
 
 ```
