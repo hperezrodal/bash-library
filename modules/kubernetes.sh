@@ -17,37 +17,37 @@
 # Example: lib_k8s_run_sql_client "sql-server" "sa" "password123" "mydb"
 # Example with script: lib_k8s_run_sql_client "sql-server" "sa" "password123" "mydb" "script.sql"
 lib_k8s_run_sql_client() {
-    local host="${1}"
-    local user="${2}"
-    local password="${3}"
-    local database="${4}"
-    local script="${5:-}"
+	local host="${1}"
+	local user="${2}"
+	local password="${3}"
+	local database="${4}"
+	local script="${5:-}"
 
-    # Validate required parameters
-    if [[ -z "${host}" || -z "${user}" || -z "${password}" || -z "${database}" ]]; then
-        echo "Error: Missing required parameters"
-        echo "Usage: lib_k8s_run_sql_client <host> <user> <password> <database> [script]"
-        return 1
-    fi
+	# Validate required parameters
+	if [[ -z "${host}" || -z "${user}" || -z "${password}" || -z "${database}" ]]; then
+		echo "Error: Missing required parameters"
+		echo "Usage: lib_k8s_run_sql_client <host> <user> <password> <database> [script]"
+		return 1
+	fi
 
-    # Base command
-    local cmd="/opt/mssql-tools/bin/sqlcmd -S \$HOST -U \$USER -d \$DB"
+	# Base command
+	local cmd="/opt/mssql-tools/bin/sqlcmd -S \$HOST -U \$USER -d \$DB"
 
-    # If script is provided, add it to the command
-    if [[ -n "${script}" ]]; then
-        cmd="${cmd} -i \$SCRIPT"
-    fi
+	# If script is provided, add it to the command
+	if [[ -n "${script}" ]]; then
+		cmd="${cmd} -i \$SCRIPT"
+	fi
 
-    # Run the SQL client pod
-    kubectl run sql-client --rm -i -t \
-        --image=mcr.microsoft.com/mssql-tools:latest \
-        --restart=Never \
-        --env="HOST=${host}" \
-        --env="USER=${user}" \
-        --env="SQLCMDPASSWORD=${password}" \
-        --env="DB=${database}" \
-        ${script:+--env="SCRIPT=${script}"} \
-        -- bash -c "${cmd}"
+	# Run the SQL client pod
+	kubectl run sql-client --rm -i -t \
+		--image=mcr.microsoft.com/mssql-tools:latest \
+		--restart=Never \
+		--env="HOST=${host}" \
+		--env="USER=${user}" \
+		--env="SQLCMDPASSWORD=${password}" \
+		--env="DB=${database}" \
+		${script:+--env="SCRIPT=${script}"} \
+		-- bash -c "${cmd}"
 }
 
 # Function: lib_k8s_connect_to_pod
@@ -76,38 +76,38 @@ lib_k8s_run_sql_client() {
 #   # Connect to a specific container in a custom namespace
 #   lib_k8s_connect_to_pod production postgres
 lib_k8s_connect_to_pod() {
-    local namespace="${1}"
-    local container_name="${2:-}"
+	local namespace="${1}"
+	local container_name="${2:-}"
 
-    # Validate required parameters
-    if [[ -z "${namespace}" ]]; then
-        echo "Error: Namespace is required"
-        echo "Usage: lib_k8s_connect_to_pod <namespace> [container_name]"
-        return 1
-    fi
+	# Validate required parameters
+	if [[ -z "${namespace}" ]]; then
+		echo "Error: Namespace is required"
+		echo "Usage: lib_k8s_connect_to_pod <namespace> [container_name]"
+		return 1
+	fi
 
-    # Get the first pod name in the namespace
-    local pod_name
-    pod_name=$(kubectl get pods -n "${namespace}" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
+	# Get the first pod name in the namespace
+	local pod_name
+	pod_name=$(kubectl get pods -n "${namespace}" -o jsonpath='{.items[0].metadata.name}' 2>/dev/null)
 
-    if [[ -z "${pod_name}" ]]; then
-        echo "Error: No pods found in namespace ${namespace}"
-        return 1
-    fi
+	if [[ -z "${pod_name}" ]]; then
+		echo "Error: No pods found in namespace ${namespace}"
+		return 1
+	fi
 
-    # Build the kubectl exec command
-    local cmd="kubectl exec -it -n ${namespace} ${pod_name}"
-    
-    # Add container name if provided
-    if [[ -n "${container_name}" ]]; then
-        cmd="${cmd} -c ${container_name}"
-    fi
+	# Build the kubectl exec command
+	local cmd="kubectl exec -it -n ${namespace} ${pod_name}"
 
-    # Add shell command
-    cmd="${cmd} -- sh"
+	# Add container name if provided
+	if [[ -n "${container_name}" ]]; then
+		cmd="${cmd} -c ${container_name}"
+	fi
 
-    # Execute the command
-    eval "${cmd}"
+	# Add shell command
+	cmd="${cmd} -- sh"
+
+	# Execute the command
+	eval "${cmd}"
 }
 
 # Function: lib_k8s_view_pod_logs
@@ -134,32 +134,32 @@ lib_k8s_connect_to_pod() {
 #   # View logs for pods with multiple labels
 #   lib_k8s_view_pod_logs production "app=api,env=prod"
 lib_k8s_view_pod_logs() {
-    local namespace="${1}"
-    local label_selector="${2:-}"
-    local container_name="${3:-}"
+	local namespace="${1}"
+	local label_selector="${2:-}"
+	local container_name="${3:-}"
 
-    # Validate required parameters
-    if [[ -z "${namespace}" ]]; then
-        echo "Error: Namespace is required"
-        echo "Usage: lib_k8s_view_pod_logs <namespace> [label_selector] [container_name]"
-        return 1
-    fi
+	# Validate required parameters
+	if [[ -z "${namespace}" ]]; then
+		echo "Error: Namespace is required"
+		echo "Usage: lib_k8s_view_pod_logs <namespace> [label_selector] [container_name]"
+		return 1
+	fi
 
-    # Build the kubectl logs command
-    local cmd="kubectl logs -f -n ${namespace}"
+	# Build the kubectl logs command
+	local cmd="kubectl logs -f -n ${namespace}"
 
-    # Add label selector if provided
-    if [[ -n "${label_selector}" ]]; then
-        cmd="${cmd} -l ${label_selector}"
-    fi
+	# Add label selector if provided
+	if [[ -n "${label_selector}" ]]; then
+		cmd="${cmd} -l ${label_selector}"
+	fi
 
-    # Add container name if provided
-    if [[ -n "${container_name}" ]]; then
-        cmd="${cmd} -c ${container_name}"
-    fi
+	# Add container name if provided
+	if [[ -n "${container_name}" ]]; then
+		cmd="${cmd} -c ${container_name}"
+	fi
 
-    # Execute the command
-    eval "${cmd}"
+	# Execute the command
+	eval "${cmd}"
 }
 
 # Function: lib_k8s_rollout_restart
@@ -179,37 +179,37 @@ lib_k8s_view_pod_logs() {
 #   # Restart deployment in default namespace
 #   lib_k8s_rollout_restart default nginx
 lib_k8s_rollout_restart() {
-    local namespace="${1}"
-    local deployment_name="${2}"
+	local namespace="${1}"
+	local deployment_name="${2}"
 
-    # Validate required parameters
-    if [[ -z "${namespace}" || -z "${deployment_name}" ]]; then
-        echo "Error: Namespace and deployment name are required"
-        echo "Usage: lib_k8s_rollout_restart <namespace> <deployment_name>"
-        return 1
-    fi
+	# Validate required parameters
+	if [[ -z "${namespace}" || -z "${deployment_name}" ]]; then
+		echo "Error: Namespace and deployment name are required"
+		echo "Usage: lib_k8s_rollout_restart <namespace> <deployment_name>"
+		return 1
+	fi
 
-    # Check if deployment exists
-    if ! kubectl get deployment "${deployment_name}" -n "${namespace}" >/dev/null 2>&1; then
-        echo "Error: Deployment ${deployment_name} not found in namespace ${namespace}"
-        return 1
-    fi
+	# Check if deployment exists
+	if ! kubectl get deployment "${deployment_name}" -n "${namespace}" >/dev/null 2>&1; then
+		echo "Error: Deployment ${deployment_name} not found in namespace ${namespace}"
+		return 1
+	fi
 
-    # Execute the rollout restart command
-    echo "Restarting deployment ${deployment_name} in namespace ${namespace}..."
-    if ! kubectl rollout restart deployment "${deployment_name}" -n "${namespace}"; then
-        echo "Error: Failed to restart deployment ${deployment_name}"
-        return 1
-    fi
+	# Execute the rollout restart command
+	echo "Restarting deployment ${deployment_name} in namespace ${namespace}..."
+	if ! kubectl rollout restart deployment "${deployment_name}" -n "${namespace}"; then
+		echo "Error: Failed to restart deployment ${deployment_name}"
+		return 1
+	fi
 
-    # Wait for rollout to complete
-    echo "Waiting for rollout to complete..."
-    if ! kubectl rollout status deployment "${deployment_name}" -n "${namespace}"; then
-        echo "Error: Rollout failed for deployment ${deployment_name}"
-        return 1
-    fi
+	# Wait for rollout to complete
+	echo "Waiting for rollout to complete..."
+	if ! kubectl rollout status deployment "${deployment_name}" -n "${namespace}"; then
+		echo "Error: Rollout failed for deployment ${deployment_name}"
+		return 1
+	fi
 
-    echo "Deployment ${deployment_name} successfully restarted"
+	echo "Deployment ${deployment_name} successfully restarted"
 }
 
 # Function: lib_k8s_describe_deployment
@@ -229,26 +229,26 @@ lib_k8s_rollout_restart() {
 #   # Get details of deployment in default namespace
 #   lib_k8s_describe_deployment default nginx
 lib_k8s_describe_deployment() {
-    local namespace="${1}"
-    local deployment_name="${2}"
+	local namespace="${1}"
+	local deployment_name="${2}"
 
-    # Validate required parameters
-    if [[ -z "${namespace}" || -z "${deployment_name}" ]]; then
-        echo "Error: Namespace and deployment name are required"
-        echo "Usage: lib_k8s_describe_deployment <namespace> <deployment_name>"
-        return 1
-    fi
+	# Validate required parameters
+	if [[ -z "${namespace}" || -z "${deployment_name}" ]]; then
+		echo "Error: Namespace and deployment name are required"
+		echo "Usage: lib_k8s_describe_deployment <namespace> <deployment_name>"
+		return 1
+	fi
 
-    # Check if deployment exists
-    if ! kubectl get deployment "${deployment_name}" -n "${namespace}" >/dev/null 2>&1; then
-        echo "Error: Deployment ${deployment_name} not found in namespace ${namespace}"
-        return 1
-    fi
+	# Check if deployment exists
+	if ! kubectl get deployment "${deployment_name}" -n "${namespace}" >/dev/null 2>&1; then
+		echo "Error: Deployment ${deployment_name} not found in namespace ${namespace}"
+		return 1
+	fi
 
-    # Execute the describe command
-    echo "Getting details for deployment ${deployment_name} in namespace ${namespace}..."
-    if ! kubectl describe deployment "${deployment_name}" -n "${namespace}"; then
-        echo "Error: Failed to get details for deployment ${deployment_name}"
-        return 1
-    fi
-} 
+	# Execute the describe command
+	echo "Getting details for deployment ${deployment_name} in namespace ${namespace}..."
+	if ! kubectl describe deployment "${deployment_name}" -n "${namespace}"; then
+		echo "Error: Failed to get details for deployment ${deployment_name}"
+		return 1
+	fi
+}
