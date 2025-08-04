@@ -14,5 +14,5 @@ source "$LIB_DIR/aws.sh"
 source "$LIB_DIR/kubernetes.sh"
 # shellcheck disable=SC1091
 source "$LIB_DIR/ansible.sh"
-
-# Any additional setup can go here
+# shellcheck disable=SC1091
+source "$LIB_DIR/eth_rpc.sh"

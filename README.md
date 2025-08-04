@@ -142,6 +142,18 @@ bash-library/
 └── CONTRIBUTING.md      # Contribution guidelines
 ```
 
+## 📚 Available Modules
+
+| Module | Description |
+|--------|-------------|
+| `ansible.sh` | Ansible automation and configuration management functions. Includes functions for inventory management, playbook execution, and variable handling. |
+| `aws.sh` | AWS operations and utilities |
+| `eth_rpc.sh` | Ethereum RPC interaction functions | 
+| `kubernetes.sh` | Kubernetes cluster management and operations. Includes functions for pod management, deployment operations, service management, and cluster configuration. |
+| `logging.sh` | Logging utilities | Functions for logging and debugging |
+
+Each module is designed to be self-contained and can be used independently. 
+
 ## 🛠️ Usage
 
 ### Basic Usage
