@@ -39,7 +39,8 @@ lib_k8s_run_sql_client() {
 	fi
 
 	# Run the SQL client pod
-	kubectl run sql-client --rm -i -t \
+	local pod_name="sql-client-$(date +%Y%m%d%H%M%S)"
+	kubectl run "${pod_name}" --rm -i -t \
 		--image=mcr.microsoft.com/mssql-tools:latest \
 		--restart=Never \
 		--env="HOST=${host}" \
@@ -251,4 +252,46 @@ lib_k8s_describe_deployment() {
 		echo "Error: Failed to get details for deployment ${deployment_name}"
 		return 1
 	fi
+}
+
+# Function: lib_k8s_connect_to_postgres
+# Description: Runs a PostgreSQL client pod in Kubernetes to interact with a PostgreSQL database
+# Usage: lib_k8s_connect_to_postgres <host> <user> <password> <database> [port]
+# Parameters:
+#   host: PostgreSQL server hostname or service name
+#   user: PostgreSQL username
+#   password: PostgreSQL password
+#   database: Target database name
+#   port: (Optional) PostgreSQL server port (default: 5432)
+# Returns: 0 on success, 1 on error
+# Example: lib_k8s_connect_to_postgres "postgres-db" "user" "password123" "mydb"
+# Example with port: lib_k8s_connect_to_postgres "postgres-db" "user" "password123" "mydb" 5433
+lib_k8s_connect_to_postgres() {
+	local host="${1}"
+	local user="${2}"
+	local password="${3}"
+	local database="${4}"
+	local port="${5:-5432}"
+
+	# Validate required parameters
+	if [[ -z "${host}" || -z "${user}" || -z "${password}" || -z "${database}" ]]; then
+		echo "Error: Missing required parameters"
+		echo "Usage: lib_k8s_connect_to_postgres <host> <user> <password> <database> [port]"
+		return 1
+	fi
+
+	# Command to run psql
+	local cmd="psql postgresql://\${PGUSER}:\${PGPASSWORD}@\${PGHOST}:\${PGPORT}/\${PGDATABASE}"
+
+	# Run the PostgreSQL client pod
+	local pod_name="postgres-client-$(date +%Y%m%d%H%M%S)"
+	kubectl run "${pod_name}" --rm -i -t \
+		--image=postgres:latest \
+		--restart=Never \
+		--env="PGHOST=${host}" \
+		--env="PGUSER=${user}" \
+		--env="PGPASSWORD=${password}" \
+		--env="PGDATABASE=${database}" \
+		--env="PGPORT=${port}" \
+		-- bash -c "${cmd}"
 }
