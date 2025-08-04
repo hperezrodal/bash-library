@@ -39,7 +39,8 @@ lib_k8s_run_sql_client() {
 	fi
 
 	# Run the SQL client pod
-	local pod_name="sql-client-$(date +%Y%m%d%H%M%S)"
+	local pod_name
+	pod_name="sql-client-$(date +%Y%m%d%H%M%S)"
 	kubectl run "${pod_name}" --rm -i -t \
 		--image=mcr.microsoft.com/mssql-tools:latest \
 		--restart=Never \
@@ -284,7 +285,8 @@ lib_k8s_connect_to_postgres() {
 	local cmd="psql postgresql://\${PGUSER}:\${PGPASSWORD}@\${PGHOST}:\${PGPORT}/\${PGDATABASE}"
 
 	# Run the PostgreSQL client pod
-	local pod_name="postgres-client-$(date +%Y%m%d%H%M%S)"
+	local pod_name
+	pod_name="postgres-client-$(date +%Y%m%d%H%M%S)"
 	kubectl run "${pod_name}" --rm -i -t \
 		--image=postgres:latest \
 		--restart=Never \
