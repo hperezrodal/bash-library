@@ -5,10 +5,11 @@
 # Description: Provides logging functions for bash scripts
 
 # Log levels
-export readonly LOG_LEVEL_DEBUG=0
-export readonly LOG_LEVEL_INFO=1
-export readonly LOG_LEVEL_WARN=2
-export readonly LOG_LEVEL_ERROR=3
+readonly LOG_LEVEL_DEBUG=0
+readonly LOG_LEVEL_INFO=1
+readonly LOG_LEVEL_WARN=2
+readonly LOG_LEVEL_ERROR=3
+export LOG_LEVEL_DEBUG LOG_LEVEL_INFO LOG_LEVEL_WARN LOG_LEVEL_ERROR
 
 # Default log level
 LOG_LEVEL=${LOG_LEVEL:-$LOG_LEVEL_INFO}
