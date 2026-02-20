@@ -26,21 +26,21 @@ lib_docker_build_image() {
 
 	while [[ $# -gt 0 ]]; do
 		case "$1" in
-			--platform)
-				platforms+=("$2")
-				shift 2
-				;;
-			--tag)
-				tags+=("$2")
-				shift 2
-				;;
-			--build-arg)
-				build_args+=("$2")
-				shift 2
-				;;
-			*)
-				break
-				;;
+		--platform)
+			platforms+=("$2")
+			shift 2
+			;;
+		--tag)
+			tags+=("$2")
+			shift 2
+			;;
+		--build-arg)
+			build_args+=("$2")
+			shift 2
+			;;
+		*)
+			break
+			;;
 		esac
 	done
 
