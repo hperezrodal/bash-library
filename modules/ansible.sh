@@ -233,3 +233,131 @@ lib_ansible_vault_change_password() {
 
 	return ${return_code}
 }
+
+# ============================================================================
+# Playbook Execution Functions
+# ============================================================================
+
+# Function: lib_ansible_check_syntax
+# Description: Checks the syntax of an Ansible playbook
+# Usage: lib_ansible_check_syntax <playbook_path>
+# Parameters:
+#   $1 - Full path to the playbook YAML file
+# Returns: ansible-playbook exit code
+lib_ansible_check_syntax() {
+	local playbook="$1"
+
+	if [[ -z "$playbook" ]]; then
+		lib_log_error "lib_ansible_check_syntax: playbook path is required"
+		return 1
+	fi
+
+	lib_log_info "Checking syntax for playbook: $playbook"
+	ansible-playbook --syntax-check "$playbook"
+}
+
+# Function: lib_ansible_run_playbook
+# Description: Runs an Ansible playbook with optional inventory and extra variables
+# Usage: lib_ansible_run_playbook <playbook_path> [inventory] [extra_vars]
+# Parameters:
+#   $1 - Full path to the playbook YAML file
+#   $2 - Inventory path (optional, default: ANSIBLE_INVENTORY env var or ./inventory)
+#   $3 - Extra variables string (optional)
+# Returns: ansible-playbook exit code
+lib_ansible_run_playbook() {
+	local playbook="$1"
+	local inventory="${2:-${ANSIBLE_INVENTORY:-./inventory}}"
+	local extra_vars="${3:-}"
+
+	if [[ -z "$playbook" ]]; then
+		lib_log_error "lib_ansible_run_playbook: playbook path is required"
+		return 1
+	fi
+
+	lib_log_info "Running playbook: $playbook"
+
+	if [[ -n "$extra_vars" ]]; then
+		ansible-playbook -i "$inventory" "$playbook" --extra-vars "$extra_vars"
+	else
+		ansible-playbook -i "$inventory" "$playbook"
+	fi
+}
+
+# Function: lib_ansible_check_hosts
+# Description: Pings all hosts in the specified inventory
+# Usage: lib_ansible_check_hosts [inventory]
+# Parameters:
+#   $1 - Inventory path (optional, default: ANSIBLE_INVENTORY env var or ./inventory)
+# Returns: ansible exit code
+lib_ansible_check_hosts() {
+	local inventory="${1:-${ANSIBLE_INVENTORY:-./inventory}}"
+
+	lib_log_info "Checking status of hosts in inventory: $inventory"
+	ansible -i "$inventory" all -m ping
+}
+
+# Function: lib_ansible_list_roles
+# Description: Lists available Ansible roles in the specified directory
+# Usage: lib_ansible_list_roles [roles_dir]
+# Parameters:
+#   $1 - Roles directory (optional, default: ./roles)
+# Returns: 0 on success
+lib_ansible_list_roles() {
+	local roles_dir="${1:-./roles}"
+
+	lib_log_info "Listing Ansible roles in: $roles_dir"
+	ls -1 "$roles_dir"
+}
+
+# Function: lib_ansible_validate_inventory
+# Description: Validates an Ansible inventory by listing its contents
+# Usage: lib_ansible_validate_inventory [inventory]
+# Parameters:
+#   $1 - Inventory path (optional, default: ANSIBLE_INVENTORY env var or ./inventory)
+# Returns: ansible-inventory exit code
+lib_ansible_validate_inventory() {
+	local inventory="${1:-${ANSIBLE_INVENTORY:-./inventory}}"
+
+	lib_log_info "Validating inventory: $inventory"
+	ansible-inventory -i "$inventory" --list
+}
+
+# Function: lib_ansible_dry_run
+# Description: Performs a dry-run (check mode) of an Ansible playbook
+# Usage: lib_ansible_dry_run <playbook_path> [inventory]
+# Parameters:
+#   $1 - Full path to the playbook YAML file
+#   $2 - Inventory path (optional, default: ANSIBLE_INVENTORY env var or ./inventory)
+# Returns: ansible-playbook exit code
+lib_ansible_dry_run() {
+	local playbook="$1"
+	local inventory="${2:-${ANSIBLE_INVENTORY:-./inventory}}"
+
+	if [[ -z "$playbook" ]]; then
+		lib_log_error "lib_ansible_dry_run: playbook path is required"
+		return 1
+	fi
+
+	lib_log_info "Performing a dry-run for playbook: $playbook"
+	ansible-playbook -i "$inventory" "$playbook" --check
+}
+
+# Function: lib_ansible_get_facts
+# Description: Fetches facts from a specific host using the setup module
+# Usage: lib_ansible_get_facts <host> [inventory]
+# Parameters:
+#   $1 - Host or group name
+#   $2 - Inventory path (optional, default: ANSIBLE_INVENTORY env var or ./inventory)
+# Returns: ansible exit code
+lib_ansible_get_facts() {
+	local host="$1"
+	local inventory="${2:-${ANSIBLE_INVENTORY:-./inventory}}"
+
+	if [[ -z "$host" ]]; then
+		lib_log_error "lib_ansible_get_facts: host is required"
+		return 1
+	fi
+
+	lib_log_info "Fetching facts for host: $host"
+	ansible -i "$inventory" "$host" -m setup
+}
