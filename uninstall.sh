@@ -35,6 +35,7 @@ for shell_rc in ~/.bashrc ~/.zshrc; do
 		# Create a temporary file without the bash library entries
 		grep -v "Bash Library" "$shell_rc" |
 			grep -v "BASH_LIBRARY_PATH" |
+			grep -v "BASH_LIBRARY_VERSION" |
 			grep -v "lib-loader.sh" >"${shell_rc}.tmp"
 
 		# Replace the original file with the temporary one

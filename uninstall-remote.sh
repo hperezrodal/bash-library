@@ -32,6 +32,7 @@ echo "Removing from shell initialization..."
 for shell_rc in ~/.bashrc ~/.zshrc; do
 	if [ -f "$shell_rc" ]; then
 		sed -i.bak '/BASH_LIBRARY_PATH/d' "$shell_rc"
+		sed -i.bak '/BASH_LIBRARY_VERSION/d' "$shell_rc"
 		sed -i.bak '/source.*bash-library/d' "$shell_rc"
 		rm "${shell_rc}.bak"
 	fi

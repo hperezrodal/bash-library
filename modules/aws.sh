@@ -99,3 +99,153 @@ lib_aws_check_credentials() {
 
 	return 0
 }
+
+# Function: lib_aws_ec2_start_instance
+# Description: Starts an EC2 instance
+# Usage: lib_aws_ec2_start_instance "instance-id"
+# Returns: 0 on success
+#          1 on error, outputs error message to stderr
+# Environment Variables:
+#     AWS_PROFILE (optional) - AWS profile to use
+#     AWS_ACCESS_KEY_ID (optional) - AWS access key ID
+#     AWS_SECRET_ACCESS_KEY (optional) - AWS secret access key
+#     AWS_REGION (optional) - AWS region to use
+lib_aws_ec2_start_instance() {
+	local instance_id="$1"
+	local aws_profile="${AWS_PROFILE:-}"
+	local aws_region="${AWS_REGION:-}"
+	local aws_cmd="aws ec2 start-instances"
+
+	# Validate input
+	if [ -z "$instance_id" ]; then
+		lib_log_error "Instance ID is required"
+		return 1
+	fi
+
+	# Check credentials first
+	if ! lib_aws_check_credentials; then
+		return 1
+	fi
+
+	# Add profile if specified
+	if [ -n "$aws_profile" ]; then
+		aws_cmd="$aws_cmd --profile $aws_profile"
+	fi
+
+	# Add region if specified
+	if [ -n "$aws_region" ]; then
+		aws_cmd="$aws_cmd --region $aws_region"
+	fi
+
+	# Start the instance
+	if ! $aws_cmd --instance-ids "$instance_id" >/dev/null 2>&1; then
+		lib_log_error "Failed to start EC2 instance '$instance_id'"
+		return 1
+	fi
+
+	lib_log_info "Successfully started EC2 instance '$instance_id'"
+	return 0
+}
+
+# Function: lib_aws_ec2_stop_instance
+# Description: Stops an EC2 instance
+# Usage: lib_aws_ec2_stop_instance "instance-id"
+# Returns: 0 on success
+#          1 on error, outputs error message to stderr
+# Environment Variables:
+#     AWS_PROFILE (optional) - AWS profile to use
+#     AWS_ACCESS_KEY_ID (optional) - AWS access key ID
+#     AWS_SECRET_ACCESS_KEY (optional) - AWS secret access key
+#     AWS_REGION (optional) - AWS region to use
+lib_aws_ec2_stop_instance() {
+	local instance_id="$1"
+	local aws_profile="${AWS_PROFILE:-}"
+	local aws_region="${AWS_REGION:-}"
+	local aws_cmd="aws ec2 stop-instances"
+
+	# Validate input
+	if [ -z "$instance_id" ]; then
+		lib_log_error "Instance ID is required"
+		return 1
+	fi
+
+	# Check credentials first
+	if ! lib_aws_check_credentials; then
+		return 1
+	fi
+
+	# Add profile if specified
+	if [ -n "$aws_profile" ]; then
+		aws_cmd="$aws_cmd --profile $aws_profile"
+	fi
+
+	# Add region if specified
+	if [ -n "$aws_region" ]; then
+		aws_cmd="$aws_cmd --region $aws_region"
+	fi
+
+	# Stop the instance
+	if ! $aws_cmd --instance-ids "$instance_id" >/dev/null 2>&1; then
+		lib_log_error "Failed to stop EC2 instance '$instance_id'"
+		return 1
+	fi
+
+	lib_log_info "Successfully stopped EC2 instance '$instance_id'"
+	return 0
+}
+
+# Function: lib_aws_ec2_get_instance_status
+# Description: Gets the current status of an EC2 instance
+# Usage: lib_aws_ec2_get_instance_status "instance-id"
+# Returns: 0 on success, outputs status to stdout
+#          1 on error, outputs error message to stderr
+# Environment Variables:
+#     AWS_PROFILE (optional) - AWS profile to use
+#     AWS_ACCESS_KEY_ID (optional) - AWS access key ID
+#     AWS_SECRET_ACCESS_KEY (optional) - AWS secret access key
+#     AWS_REGION (optional) - AWS region to use
+lib_aws_ec2_get_instance_status() {
+	local instance_id="$1"
+	local aws_profile="${AWS_PROFILE:-}"
+	local aws_region="${AWS_REGION:-}"
+	local aws_cmd="aws ec2 describe-instances"
+
+	# Validate input
+	if [ -z "$instance_id" ]; then
+		lib_log_error "Instance ID is required"
+		return 1
+	fi
+
+	# Check credentials first
+	if ! lib_aws_check_credentials; then
+		return 1
+	fi
+
+	# Add profile if specified
+	if [ -n "$aws_profile" ]; then
+		aws_cmd="$aws_cmd --profile $aws_profile"
+	fi
+
+	# Add region if specified
+	if [ -n "$aws_region" ]; then
+		aws_cmd="$aws_cmd --region $aws_region"
+	fi
+
+	# Get instance status
+	if ! status=$($aws_cmd \
+		--instance-ids "$instance_id" \
+		--query 'Reservations[0].Instances[0].State.Name' \
+		--output text 2>&1); then
+		lib_log_error "Failed to get status for EC2 instance '$instance_id': $status"
+		return 1
+	fi
+
+	# Check if instance exists
+	if [ "$status" = "None" ]; then
+		lib_log_error "EC2 instance '$instance_id' not found"
+		return 1
+	fi
+
+	echo "$status"
+	return 0
+}
