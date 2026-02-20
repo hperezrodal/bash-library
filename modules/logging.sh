@@ -61,8 +61,24 @@ lib_log_info() {
 	return 0
 }
 
+# Function: lib_log_warn
+# Description: Logs a warning message to stderr
+# Usage: lib_log_warn "Message"
+# Returns: 0 on success
+lib_log_warn() {
+	if [ $# -ne 1 ]; then
+		echo "Error: lib_log_warn requires exactly one argument" >&2
+		return 1
+	fi
+
+	if [ "${LOG_LEVEL}" -le "${LOG_LEVEL_WARN}" ]; then
+		echo "[WARN] $1" >&2
+	fi
+	return 0
+}
+
 # Function: lib_log_error
-# Description: Logs an error message
+# Description: Logs an error message to stderr
 # Usage: lib_log_error "Message"
 # Returns: 0 on success
 lib_log_error() {
@@ -72,5 +88,19 @@ lib_log_error() {
 	fi
 
 	echo "[ERROR] $1" >&2
+	return 0
+}
+
+# Function: lib_log_success
+# Description: Logs a success message
+# Usage: lib_log_success "Message"
+# Returns: 0 on success
+lib_log_success() {
+	if [ $# -ne 1 ]; then
+		echo "Error: lib_log_success requires exactly one argument" >&2
+		return 1
+	fi
+
+	echo "[SUCCESS] $1"
 	return 0
 }
