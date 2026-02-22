@@ -102,10 +102,17 @@ lib_pipeline_setup() {
 	local host="$2"
 	local vault_file="${ANSIBLE_VAULT_PASSWORD_FILE:-./secrets/.vault_pass}"
 
+	local vault_arg=""
+	if [[ -f "$vault_file" ]]; then
+		vault_arg="--vault-password-file=${vault_file}"
+	else
+		lib_log_info "Vault password file not found at '${vault_file}', skipping --vault-password-file"
+	fi
+
 	ansible-playbook -i "inventories/${env}/hosts.yml" ahteslabs.ops.servers \
 		--extra-vars "myhome=${PWD}" \
 		--private-key="${PRIVATE_KEY}" \
-		--vault-password-file="${vault_file}" \
+		${vault_arg} \
 		--limit "$host"
 
 	if [[ $? -ne 0 ]]; then
@@ -135,6 +142,13 @@ lib_pipeline_deployment() {
 	local vault_file="${ANSIBLE_VAULT_PASSWORD_FILE:-./secrets/.vault_pass}"
 	local bg="${BLUEGREEN:-false}"
 
+	local vault_arg=""
+	if [[ -f "$vault_file" ]]; then
+		vault_arg="--vault-password-file=${vault_file}"
+	else
+		lib_log_info "Vault password file not found at '${vault_file}', skipping --vault-password-file"
+	fi
+
 	local extra_vars="app=${app} component=${component} env=${env} myhome=${PWD}"
 	if [[ "$bg" == "true" ]]; then
 		extra_vars="${extra_vars} bluegreen=true"
@@ -145,7 +159,7 @@ lib_pipeline_deployment() {
 	ansible-playbook -i "inventories/${env}/hosts.yml" ahteslabs.ops.deployment \
 		--extra-vars "${extra_vars}" \
 		--private-key="${PRIVATE_KEY}" \
-		--vault-password-file="${vault_file}" \
+		${vault_arg} \
 		--limit "$host"
 
 	if [[ $? -ne 0 ]]; then
