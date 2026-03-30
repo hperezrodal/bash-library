@@ -45,9 +45,15 @@ lib_pipeline_build_and_publish() {
 	workdir="${workdir}/${repository}-${now}"
 
 	# checkout
-	lib_git_clone_repo "$git_url" "$workdir" || { lib_log_error "Failed to clone repository"; return 1; }
+	lib_git_clone_repo "$git_url" "$workdir" || {
+		lib_log_error "Failed to clone repository"
+		return 1
+	}
 	cd "$workdir" || return 1
-	lib_git_switch_branch "$branch" || { lib_log_error "Failed to switch to branch $branch"; return 1; }
+	lib_git_switch_branch "$branch" || {
+		lib_log_error "Failed to switch to branch $branch"
+		return 1
+	}
 
 	# prepare
 	lib_copy_recursively "$myhome" "$workdir"
@@ -63,28 +69,31 @@ lib_pipeline_build_and_publish() {
 	lib_log_info "COMMIT=$commit"
 	lib_log_info "TAG=$tag"
 
-	lib_docker_build_image "$PWD/Dockerfile" "$image" \
+	if ! lib_docker_build_image "$PWD/Dockerfile" "$image" \
 		--platform "linux/amd64" \
 		--tag "$tag" \
 		--tag "latest" \
-		--build-arg "artifact_version=${tag}"
-
-	if [[ $? -ne 0 ]]; then
+		--build-arg "artifact_version=${tag}"; then
 		lib_log_error "Docker build failed"
 		return 1
 	fi
 
 	# docker login
 	if [[ -n "${DOCKER_USERNAME:-}" && -n "${DOCKER_PASSWORD:-}" && -n "${DOCKER_REGISTRY:-}" ]]; then
-		echo "${DOCKER_PASSWORD}" | docker login "${DOCKER_REGISTRY}" -u "${DOCKER_USERNAME}" --password-stdin
-		if [[ $? -ne 0 ]]; then
+		if ! echo "${DOCKER_PASSWORD}" | docker login "${DOCKER_REGISTRY}" -u "${DOCKER_USERNAME}" --password-stdin; then
 			lib_log_error "Docker login failed"
 			return 1
 		fi
 	fi
 
-	lib_docker_push_image "${image}:${tag}" || { lib_log_error "Failed to push image ${image}:${tag}"; return 1; }
-	lib_docker_push_image "${image}:latest" || { lib_log_error "Failed to push image ${image}:latest"; return 1; }
+	lib_docker_push_image "${image}:${tag}" || {
+		lib_log_error "Failed to push image ${image}:${tag}"
+		return 1
+	}
+	lib_docker_push_image "${image}:latest" || {
+		lib_log_error "Failed to push image ${image}:latest"
+		return 1
+	}
 
 	lib_log_header_done "$0"
 }
@@ -109,13 +118,12 @@ lib_pipeline_setup() {
 		lib_log_info "Vault password file not found at '${vault_file}', skipping --vault-password-file"
 	fi
 
-	ansible-playbook -i "inventories/${env}/hosts.yml" ahteslabs.ops.servers \
+	# shellcheck disable=SC2086 # Intentional word splitting for vault_arg
+	if ! ansible-playbook -i "inventories/${env}/hosts.yml" ahteslabs.ops.servers \
 		--extra-vars "myhome=${PWD}" \
 		--private-key="${PRIVATE_KEY}" \
 		${vault_arg} \
-		--limit "$host"
-
-	if [[ $? -ne 0 ]]; then
+		--limit "$host"; then
 		lib_log_error "Ansible setup playbook failed"
 		return 1
 	fi
@@ -156,13 +164,12 @@ lib_pipeline_deployment() {
 	fi
 
 	lib_log_info "Deploying '${app}-${component}' to '${host}' with env '${env}'..."
-	ansible-playbook -i "inventories/${env}/hosts.yml" ahteslabs.ops.deployment \
+	# shellcheck disable=SC2086 # Intentional word splitting for vault_arg
+	if ! ansible-playbook -i "inventories/${env}/hosts.yml" ahteslabs.ops.deployment \
 		--extra-vars "${extra_vars}" \
 		--private-key="${PRIVATE_KEY}" \
 		${vault_arg} \
-		--limit "$host"
-
-	if [[ $? -ne 0 ]]; then
+		--limit "$host"; then
 		lib_log_error "Ansible deployment playbook failed for '${app}-${component}'"
 		return 1
 	fi

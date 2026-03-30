@@ -2,7 +2,7 @@
 
 A comprehensive collection of reusable bash functions and scripts for common DevOps and system administration tasks, designed to make shell scripting more efficient and maintainable.
 
-![GitHub Release](https://img.shields.io/github/v/release/bash-library/bash-library?style=flat-square)
+![GitHub Release](https://img.shields.io/github/v/release/hperezrodal/bash-library?style=flat-square)
 [![GitHub Issues](https://img.shields.io/github/issues/hperezrodal/bash-library)](https://github.com/hperezrodal/bash-library/issues)
 [![GitHub Stars](https://img.shields.io/github/stars/hperezrodal/bash-library)](https://github.com/hperezrodal/bash-library/stargazers)
 ![Code Style: ShellCheck](https://img.shields.io/badge/code%20style-shellcheck-brightgreen?style=flat-square)
@@ -74,6 +74,19 @@ cd bash-library
 ./install.sh
 ```
 
+### Update
+
+#### Remote Update
+
+```bash
+curl -sSL https://raw.githubusercontent.com/hperezrodal/bash-library/main/update-remote.sh | bash
+```
+
+For system-wide installations:
+```bash
+curl -sSL https://raw.githubusercontent.com/hperezrodal/bash-library/main/update-remote.sh | SYSTEM_INSTALL=true sudo -E bash
+```
+
 ### Uninstallation
 
 #### System-wide Uninstallation (requires root)
@@ -132,27 +145,60 @@ The pre-commit hook will automatically:
 
 ```
 bash-library/
-├── modules/             # Core function modules
-├── scripts/             # Utility scripts
-├── examples/            # Usage examples
-├── lib-loader.sh        # Main functions file
-├── install.sh           # Installation script
-├── uninstall.sh         # Uninstallation script
-├── build.sh             # Docker build script
-└── CONTRIBUTING.md      # Contribution guidelines
+├── modules/               # Core function modules
+├── scripts/               # Utility scripts
+├── examples/              # Usage examples
+├── lib-loader.sh          # Library entry point and module loader
+├── version                # Current version
+├── install.sh             # Local installation script (requires root)
+├── install-remote.sh      # Remote installation script
+├── update-remote.sh       # Remote update script
+├── uninstall.sh           # Local uninstallation script (requires root)
+├── uninstall-remote.sh    # Remote uninstallation script
+└── CONTRIBUTING.md        # Contribution guidelines
 ```
 
 ## 📚 Available Modules
 
+#### Core Utilities
+
 | Module | Description |
 |--------|-------------|
-| `ansible.sh` | Ansible automation and configuration management functions. Includes functions for inventory management, playbook execution, and variable handling. |
-| `aws.sh` | AWS operations and utilities |
-| `eth_rpc.sh` | Ethereum RPC interaction functions | 
-| `kubernetes.sh` | Kubernetes cluster management and operations. Includes functions for pod management, deployment operations, service management, and cluster configuration. |
-| `logging.sh` | Logging utilities | Functions for logging and debugging |
+| `logging.sh` | Logging functions for bash scripts |
+| `datetime.sh` | Timestamp utilities |
+| `validate_params.sh` | Parameter validation for bash functions |
+| `files.sh` | File and directory copy operations |
+| `git.sh` | Git repository operations |
+| `docker.sh` | Docker image build and push operations |
 
-Each module is designed to be self-contained and can be used independently. 
+#### Infrastructure
+
+| Module | Description |
+|--------|-------------|
+| `ssh.sh` | SSH tunnel management |
+| `psql.sh` | PostgreSQL client operations via Docker |
+| `mongosh.sh` | MongoDB shell client via Docker |
+| `redis_cli.sh` | Redis CLI client via Docker |
+| `ansible.sh` | Ansible automation and configuration management |
+
+#### Deployment & Operations
+
+| Module | Description |
+|--------|-------------|
+| `bluegreen.sh` | Blue-green deployment for Docker + Traefik environments |
+| `smoke.sh` | HTTP health checks with retry logic |
+| `state.sh` | Deployment history recording and querying |
+| `pipeline.sh` | CI/CD pipeline orchestration for build, setup, and deployment |
+
+#### Cloud & Blockchain
+
+| Module | Description |
+|--------|-------------|
+| `aws.sh` | AWS-related functions |
+| `kubernetes.sh` | Kubernetes cluster management and operations |
+| `eth_rpc.sh` | Ethereum RPC interaction |
+
+Each module is designed to be self-contained and can be used independently.
 
 ## 🛠️ Usage
 
@@ -166,44 +212,27 @@ source /path/to/bash-library/lib-loader.sh
 
 ### Available Modules
 
-The library provides several modules with common functions:
-
-- **AWS Operations** (`aws.sh`): Functions for AWS-related operations
+See the [Available Modules](#-available-modules) section for the full list.
 
 ### Available Scripts
 
-The library provides the following utility scripts:
+After installation, scripts are automatically available in your PATH:
 
-- **AWS Secrets Management** (`aws-secrets.sh`): Script for managing AWS secrets
+| Script | Description |
+|--------|-------------|
+| `aws-secrets` | AWS secrets management |
+| `mkp` | Deterministic password generator from a seed phrase |
+| `sql-client` | SQL client via kubectl port-forward |
 
 #### Using Scripts
 
-After installation, scripts are automatically made available in your system's PATH. You can use them in two ways:
-
-1. **Direct Execution**
-   ```bash
-   # Run the script directly
-   aws-secrets --help
-   ```
-
-2. **Sourcing in Your Script**
-   ```bash
-   # Source the script to use its functions
-   source /path/to/bash-library/scripts/aws-secrets.sh
-   ```
-
-#### Script Documentation
-
-Each script includes built-in help documentation. To view available options and usage:
 ```bash
+# Direct execution (available after installation)
 aws-secrets --help
-```
+mkp --help
 
-### Example Usage
-
-```bash
-# Using AWS secrets script
-aws-secrets get-secret my-secret-name
+# Or source in your script
+source /path/to/bash-library/scripts/aws-secrets.sh
 ```
 
 ## 📚 Examples

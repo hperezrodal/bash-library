@@ -21,8 +21,9 @@ if [ -z "${MKP_PEPPER:-}" ]; then
 fi
 
 # Leer semilla sin mostrar
-read -rs -p "Enter seed: " SEED
-echo
+echo -n "Enter seed: " >&2
+read -rs SEED
+echo >&2
 SEED="$SEED${MKP_PEPPER:-}"
 
 # SHA-256 hash (Linux/macOS)
