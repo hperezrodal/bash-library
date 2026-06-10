@@ -7,7 +7,7 @@
 LIB_DIR="${BASH_LIBRARY_PATH:+${BASH_LIBRARY_PATH}/modules}"
 LIB_DIR="${LIB_DIR:-$(dirname "${BASH_SOURCE[0]}")/modules}"
 
-export BASH_LIBRARY_VERSION="0.4.0"
+export BASH_LIBRARY_VERSION="0.4.1"
 
 # Source each module — core utilities
 # shellcheck disable=SC1091
