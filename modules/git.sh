@@ -86,7 +86,9 @@ lib_git_push_branch() {
 }
 
 # Function: lib_git_switch_branch
-# Description: Switches to the specified branch, creating it if it doesn't exist
+# Description: Switches to the specified branch, preferring the remote-tracking
+#   branch (origin/<name>) over any local branch. Errors if the branch does not
+#   exist locally or on origin (does NOT create a new branch from HEAD).
 # Usage: lib_git_switch_branch "branch-name"
 # Parameters:
 #   $1 - Branch name (required)
@@ -99,12 +101,19 @@ lib_git_switch_branch() {
 		return 1
 	fi
 
-	if git rev-parse --verify "$branch_name" >/dev/null 2>&1; then
-		lib_log_info "Switching to branch $branch_name..."
+	# Prefer the remote-tracking branch so a fresh clone checks out the real
+	# branch instead of forking a new one from the clone's default HEAD.
+	# git rev-parse --verify does NOT resolve remote-only branches, so the old
+	# code fell through to `checkout -b` and silently built the default branch.
+	if git rev-parse --verify --quiet "origin/$branch_name" >/dev/null; then
+		lib_log_info "Switching to origin/$branch_name..."
+		git checkout -B "$branch_name" "origin/$branch_name"
+	elif git rev-parse --verify --quiet "refs/heads/$branch_name" >/dev/null; then
+		lib_log_info "Switching to local branch $branch_name..."
 		git checkout "$branch_name"
 	else
-		lib_log_info "Branch $branch_name does not exist. Creating and switching..."
-		git checkout -b "$branch_name"
+		lib_log_error "lib_git_switch_branch: branch '$branch_name' not found locally or on origin"
+		return 1
 	fi
 }
 
